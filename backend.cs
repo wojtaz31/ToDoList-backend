@@ -4,6 +4,14 @@ using Microsoft.AspNetCore.Builder;
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
+app.MapPost("/list/{id}", (int id) =>
+{
+    ToDoList newList = new ToDoList(id);
+    return $"Utworzono lisę o ID: {id}";
+});
+
+app.Run();
+
 public class ToDoList
 {
     public int id { get; set; }
@@ -14,7 +22,6 @@ public class ToDoList
         this.id = id;
         this.TaskList = new List<ToDoListItem>();
     }
-
 }
 
 public class ToDoListItem
