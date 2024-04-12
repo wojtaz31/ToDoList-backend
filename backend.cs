@@ -11,6 +11,16 @@ app.MapPost("/list/{id}", (int id) =>
     return $"Utworzono lisę o ID: {id}";
 });
 
+app.MapGet("/lists", () =>
+{
+    Dictionary<int, int> listLengths = ToDoListRepository.GetAllLists()
+        .ToDictionary(entry => entry.Key, entry => entry.Value.TaskList.Count);
+
+    var response = new Dictionary<string, Dictionary<int, int>> { { "Lists", listLengths } };
+    return response;
+});
+
+
 app.Run();
 
 public class ToDoListRepository
