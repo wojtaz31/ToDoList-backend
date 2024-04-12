@@ -6,6 +6,7 @@ var app = builder.Build();
 
 app.MapPost("/list/{id}", (int id) =>
 {
+    if (ToDoList.CheckIfListExists(id)) return $"Lista o ID: {id} już istnieje !";
     ToDoList newList = new ToDoList(id);
     return $"Utworzono lisę o ID: {id}";
 });
@@ -14,6 +15,7 @@ app.Run();
 
 public class ToDoList
 {
+    private static List<int> idList = new List<int>();
     public int id { get; set; }
     public List<ToDoListItem> TaskList { get; set; }
 
@@ -21,7 +23,12 @@ public class ToDoList
     {
         this.id = id;
         this.TaskList = new List<ToDoListItem>();
+        idList.Add(id);
     }
+
+    public static List<int> GetIds() => idList;
+
+    public static bool CheckIfListExists(int id) => ToDoList.GetIds().Contains(id);
 }
 
 public class ToDoListItem
