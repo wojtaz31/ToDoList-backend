@@ -50,6 +50,28 @@ app.MapPost("/list/{id}/task", (int id, IToDoListItemDTO newItem) =>
     return $"Dodano nowe zadanie o ID: {newItem.Id} do listy o ID: {id}";
 });
 
+app.MapPut("/list/{listId}/task/{taskId}", (int listId, int taskId, IToDoListItemDTO updatedTask) =>
+{
+    if (!ToDoListRepository.CheckIfListExists(listId)) return $"Lista o ID: {listId} nie istnieje !";
+
+    ToDoList list = ToDoListRepository.GetAllLists()[listId];
+    ToDoListItem existingTask = list.TaskList.FirstOrDefault(t => t.Id == taskId);
+
+    if (existingTask == null) return $"Zadanie o ID: {taskId} nie istnieje w liście o ID: {listId} !";
+
+    PriorityLevel parseResult;
+    Enum.TryParse<PriorityLevel>(updatedTask.Priority, true, out parseResult);
+
+    existingTask.Content = updatedTask.Content;
+    existingTask.Priority = parseResult;
+    existingTask.Deadline = updatedTask.Deadline;
+    existingTask.Status = updatedTask.Status;
+    existingTask.Tags = updatedTask.Tags;
+
+    return $"Zaktualizowano zadanie o ID: {taskId} w liście o ID: {listId}";
+});
+
+
 app.MapGet("/list/{id}/tasks", context =>
 {
     int id = int.Parse(context.Request.RouteValues["id"].ToString());
