@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
@@ -49,6 +50,19 @@ app.MapPost("/list/{id}/task", (int id, IToDoListItemDTO newItem) =>
     return $"Dodano nowe zadanie o ID: {newItem.Id} do listy o ID: {id}";
 });
 
+app.MapGet("/list/{id}/tasks", context =>
+{
+    int id = int.Parse(context.Request.RouteValues["id"].ToString());
+    if (!ToDoListRepository.CheckIfListExists(id))
+    {
+        context.Response.StatusCode = 404;
+        return context.Response.WriteAsync($"Lista o ID: {id} nie istnieje !");
+    }
+
+    ToDoList list = ToDoListRepository.GetAllLists()[id];
+
+    return context.Response.WriteAsJsonAsync(list.TaskList);
+});
 
 app.Run();
 
