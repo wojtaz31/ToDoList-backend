@@ -27,6 +27,29 @@ app.MapDelete("/list/{id}", (int id) =>
     return $"Usunięto listę o ID: {id}";
 });
 
+app.MapPost("/list/{id}/task", (int id, IToDoListItemDTO newItem) =>
+{
+    if (!ToDoListRepository.CheckIfListExists(id)) return $"Lista o ID: {id} nie istnieje !";
+
+    PriorityLevel ParseResult;
+    Enum.TryParse<PriorityLevel>(newItem.Priority, true, out ParseResult);
+
+    ToDoList list = ToDoListRepository.GetAllLists()[id];
+    var newTask = new ToDoListItem(
+        id: newItem.Id,
+        content: newItem.Content,
+        priority: ParseResult,
+        deadline: newItem.Deadline,
+        status: newItem.Status,
+        tags: newItem.Tags
+    );
+
+    list.TaskList.Add(newTask);
+
+    return $"Dodano nowe zadanie o ID: {newItem.Id} do listy o ID: {id}";
+});
+
+
 app.Run();
 
 public class ToDoListRepository
@@ -52,6 +75,16 @@ public class ToDoList
         this.TaskList = new List<ToDoListItem>();
         ToDoListRepository.AddList(this);
     }
+}
+
+public class IToDoListItemDTO
+{
+    public int Id { get; set; }
+    public string Content { get; set; }
+    public String? Priority { get; set; }
+    public DateTime? Deadline { get; set; }
+    public string Status { get; set; }
+    public string[] Tags { get; set; }
 }
 
 public class ToDoListItem
