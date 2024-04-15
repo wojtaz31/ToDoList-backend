@@ -36,7 +36,7 @@ app.MapPost("/list/{id}/task", (int id, ToDoListItemDTO newItem) =>
     Enum.TryParse<PriorityLevel>(newItem.Priority, true, out ParseResult);
 
     ToDoList list = ToDoListRepository.GetAllLists()[id];
-    list.CreateTask(newItem, ParseResult);
+    if (!list.CreateTask(newItem, ParseResult)) return $"Zadanie o ID: {newItem.Id} już istnieje w liście o ID: {id}";
 
     return $"Dodano nowe zadanie o ID: {newItem.Id} do listy o ID: {id}";
 });
@@ -113,8 +113,9 @@ public class ToDoList
         ToDoListRepository.AddList(this);
     }
 
-    public void CreateTask(ToDoListItemDTO newItem, PriorityLevel ParseResult)
+    public bool CreateTask(ToDoListItemDTO newItem, PriorityLevel ParseResult)
     {
+        if (this.TaskList.FirstOrDefault(t => t.Id == newItem.Id) != null) return false;
         var newTask = new ToDoListItem(
         id: newItem.Id,
         content: newItem.Content,
@@ -125,6 +126,7 @@ public class ToDoList
     );
 
         this.TaskList.Add(newTask);
+        return true;
     }
 }
 
