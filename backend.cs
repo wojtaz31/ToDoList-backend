@@ -56,7 +56,7 @@ app.MapPut("/list/{listId}/task/{taskId}", (int listId, int taskId, ToDoListItem
     if (!ToDoListRepository.CheckIfListExists(listId)) return $"Lista o ID: {listId} nie istnieje !";
 
     ToDoList list = ToDoListRepository.GetAllLists()[listId];
-    if (!list.OverWriteTask(taskId, updatedTask)) return $"Zadanie o ID: {taskId} nie istnieje w liście o ID: {listId} !";
+    if (!list.OverWriteTask(taskId, updatedTask)) return $"Dodano nowe zadanie o ID: {updatedTask.Id} do listy o ID: {listId}";
 
     return $"Zaktualizowano zadanie o ID: {taskId} w liście o ID: {listId}";
 });
@@ -122,10 +122,14 @@ public class ToDoList
     {
         ToDoListItem existingTask = this.TaskList.FirstOrDefault(t => t.Id == taskId);
 
-        if (existingTask == null) return false;
-
         PriorityLevel parseResult;
         Enum.TryParse<PriorityLevel>(updatedTask.Priority, true, out parseResult);
+
+        if (existingTask == null)
+        {
+            this.CreateTask(updatedTask, parseResult);
+            return false;
+        }
 
         existingTask.Content = updatedTask.Content;
         existingTask.Priority = parseResult;
