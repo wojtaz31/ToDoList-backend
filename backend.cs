@@ -28,7 +28,7 @@ app.MapDelete("/list/{id}", (int id) =>
     return $"Usunięto listę o ID: {id}";
 });
 
-app.MapPost("/list/{id}/task", (int id, IToDoListItemDTO newItem) =>
+app.MapPost("/list/{id}/task", (int id, ToDoListItemDTO newItem) =>
 {
     if (!ToDoListRepository.CheckIfListExists(id)) return $"Lista o ID: {id} nie istnieje !";
 
@@ -36,16 +36,7 @@ app.MapPost("/list/{id}/task", (int id, IToDoListItemDTO newItem) =>
     Enum.TryParse<PriorityLevel>(newItem.Priority, true, out ParseResult);
 
     ToDoList list = ToDoListRepository.GetAllLists()[id];
-    var newTask = new ToDoListItem(
-        id: newItem.Id,
-        content: newItem.Content,
-        priority: ParseResult,
-        deadline: newItem.Deadline,
-        status: newItem.Status,
-        tags: newItem.Tags
-    );
-
-    list.TaskList.Add(newTask);
+    list.CreateTask(newItem, ParseResult);
 
     return $"Dodano nowe zadanie o ID: {newItem.Id} do listy o ID: {id}";
 });
@@ -60,7 +51,7 @@ app.MapDelete("/list/{listId}/task/{taskId}", (int listId, int taskId) =>
     return $"Usunięto zadanie o ID: {taskId} z listy o ID: {listId}";
 });
 
-app.MapPut("/list/{listId}/task/{taskId}", (int listId, int taskId, IToDoListItemDTO updatedTask) =>
+app.MapPut("/list/{listId}/task/{taskId}", (int listId, int taskId, ToDoListItemDTO updatedTask) =>
 {
     if (!ToDoListRepository.CheckIfListExists(listId)) return $"Lista o ID: {listId} nie istnieje !";
 
@@ -121,9 +112,23 @@ public class ToDoList
         this.TaskList = new List<ToDoListItem>();
         ToDoListRepository.AddList(this);
     }
+
+    public void CreateTask(ToDoListItemDTO newItem, PriorityLevel ParseResult)
+    {
+        var newTask = new ToDoListItem(
+        id: newItem.Id,
+        content: newItem.Content,
+        priority: ParseResult,
+        deadline: newItem.Deadline,
+        status: newItem.Status,
+        tags: newItem.Tags
+    );
+
+        this.TaskList.Add(newTask);
+    }
 }
 
-public class IToDoListItemDTO
+public class ToDoListItemDTO
 {
     public int Id { get; set; }
     public string Content { get; set; }
