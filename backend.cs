@@ -50,6 +50,16 @@ app.MapPost("/list/{id}/task", (int id, IToDoListItemDTO newItem) =>
     return $"Dodano nowe zadanie o ID: {newItem.Id} do listy o ID: {id}";
 });
 
+app.MapDelete("/list/{listId}/task/{taskId}", (int listId, int taskId) =>
+{
+    if (!ToDoListRepository.CheckIfListExists(listId)) return $"Lista o ID: {listId} nie istnieje !";
+    ToDoList list = ToDoListRepository.GetAllLists()[listId];
+    var itemToRemove = list.TaskList.FirstOrDefault(t => t.Id == taskId);
+    if (itemToRemove == null) return $"Zadanie o ID: {taskId} nie istnieje w liście o ID: {listId} !";
+    list.TaskList.Remove(itemToRemove);
+    return $"Usunięto zadanie o ID: {taskId} z listy o ID: {listId}";
+});
+
 app.MapPut("/list/{listId}/task/{taskId}", (int listId, int taskId, IToDoListItemDTO updatedTask) =>
 {
     if (!ToDoListRepository.CheckIfListExists(listId)) return $"Lista o ID: {listId} nie istnieje !";
