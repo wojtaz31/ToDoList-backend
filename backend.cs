@@ -56,18 +56,7 @@ app.MapPut("/list/{listId}/task/{taskId}", (int listId, int taskId, ToDoListItem
     if (!ToDoListRepository.CheckIfListExists(listId)) return $"Lista o ID: {listId} nie istnieje !";
 
     ToDoList list = ToDoListRepository.GetAllLists()[listId];
-    ToDoListItem existingTask = list.TaskList.FirstOrDefault(t => t.Id == taskId);
-
-    if (existingTask == null) return $"Zadanie o ID: {taskId} nie istnieje w liście o ID: {listId} !";
-
-    PriorityLevel parseResult;
-    Enum.TryParse<PriorityLevel>(updatedTask.Priority, true, out parseResult);
-
-    existingTask.Content = updatedTask.Content;
-    existingTask.Priority = parseResult;
-    existingTask.Deadline = updatedTask.Deadline;
-    existingTask.Status = updatedTask.Status;
-    existingTask.Tags = updatedTask.Tags;
+    if (!list.OverWriteTask(taskId, updatedTask)) return $"Zadanie o ID: {taskId} nie istnieje w liście o ID: {listId} !";
 
     return $"Zaktualizowano zadanie o ID: {taskId} w liście o ID: {listId}";
 });
@@ -126,6 +115,23 @@ public class ToDoList
     );
 
         this.TaskList.Add(newTask);
+        return true;
+    }
+
+    public bool OverWriteTask(int taskId, ToDoListItemDTO updatedTask)
+    {
+        ToDoListItem existingTask = this.TaskList.FirstOrDefault(t => t.Id == taskId);
+
+        if (existingTask == null) return false;
+
+        PriorityLevel parseResult;
+        Enum.TryParse<PriorityLevel>(updatedTask.Priority, true, out parseResult);
+
+        existingTask.Content = updatedTask.Content;
+        existingTask.Priority = parseResult;
+        existingTask.Deadline = updatedTask.Deadline;
+        existingTask.Status = updatedTask.Status;
+        existingTask.Tags = updatedTask.Tags;
         return true;
     }
 }
